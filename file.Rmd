@@ -1,0 +1,204 @@
+---
+title: 'R for data science '
+author: "Thulani"
+output: html_notebook
+---
+
+## Insert: select to code in R
+loading libraries
+```{r}
+library(ggplot2)
+
+```
+
+```{r}
+mpg
+```
+
+Setting working directory
+```{r}
+setwd("C:/Users/thula/Desktop/Workshop_datascience")
+getwd()
+list.files()
+```
+
+### variables
+```{r}
+num1<-45
+num1
+
+num2<-60
+num2
+num1+num2
+
+```
+
+### Functions
+```{r}
+sum_function = function(x=NULL,y=NULL){
+  sum(x,y)
+}
+sum_function(2,5)
+```
+#sum_function = function(...) #when we don't know what variablws to be used in function
+
+### Vectors
+```{r}
+vec=c(1:10)
+vec
+#repeat 1 for 10 times
+rep(1,10)
+```
+```{r}
+seq(1,100,2)
+```
+
+### Dataframes
+```{r}
+df=data.frame(index=c(1:10),name=c(letters[1:10]))
+df
+head(df,n=4)
+dim(df)
+str(df)
+class(df)
+levels(df$name)
+#all rows of column 1
+df[,1]
+#mean of index column 
+mean(df$index)
+mean(df[,1])
+
+```
+
+### Import a file: tab seperated bed file
+```{r}
+df_tf = read.table(file="TF_GRCh37.bed", sep="\t")
+df_tf
+
+#to load large data
+library(data.table)
+df_tf=fread("TF_GRCh37.bed")
+df_tf
+colnames(df_tf)=c("chr","start","end","TF","score")
+colnames(df_tf[,5])="score2"
+```
+
+### Using ggplot 
+```{r}
+#Processed rectangular data set: transformed
+mpg
+class(mpg)
+ggplot(data=mpg)+
+  geom_point(aes(x=displ,y=hwy))+
+  theme_bw()
+```
+
+### Apply colours
+```{r}
+ggplot(data=mpg)+
+  geom_point(aes(x=displ,y=hwy,color=class))+
+  theme_bw()
+```
+
+### Size and shape
+```{r}
+#size
+ggplot(data=mpg)+
+  geom_point(aes(x=displ,y=hwy,color=class, size=trans))+
+  theme_bw()
+
+#shape
+ggplot(data=mpg)+
+  geom_point(aes(x=displ,y=hwy,color=class, shape=manufacturer))+
+  theme_bw()
+```
+
+
+### To find patterns in data
+```{r}
+ggplot(data=mpg)+
+  geom_smooth(aes(x=displ,y=hwy,group=drv,color=drv))+
+  theme_bw()
+```
+
+### Geom_point and smooth together
+```{r}
+ggplot(data=mpg)+
+  geom_point(aes(x=displ,y=hwy,color=class))+
+  geom_smooth(aes(x=displ,y=hwy,group=drv))+
+  theme_bw()
+```
+
+### Categorizing cars depending on fuel types
+```{r}
+ggplot(data=mpg)+
+  geom_bar(mapping=aes(x=mpg$fl),data=mpg)+
+  theme_bw()
+```
+
+### City mileage for each data type
+```{r}
+ggplot(data=mpg)+
+  geom_bar(aes(x=cty,color=fl,fill=fl))
+  theme_bw()
+```
+
+### Importing hg19 data
+```{r}
+library(data.table)
+df_tf2=fread("2009GRCh37_hg19.bed")
+TF=factor(df_tf2$V4)
+g=ggplot(data=df_tf2)+
+  geom_bar(aes(x=df_tf2$V4),position = "identity")
+  theme_bw()
+g
+
+X=as.data.frame(table(df_tf2$V4))
+X
+X=X[order(-X$Freq),]
+X
+X[X$Freq == max(X$Freq),]
+```
+
+### Analysis using dplyr package
+### Grammar of data manipulation:  improves readability
+```{r}
+library(dplyr)
+dt_tf2=as.data.frame(table(df_tf2$V4))
+
+#pipes - %>%
+df_tf3=df_tf2$V4 %>% table %>% as.data.frame %>% head
+df_tf3
+df_tf2 %>% group_by(V4) %>%  summarise(freq = n())
+```
+
+### Subsetting 
+```{r}
+Chr1=df_tf2 %>% subset(V1=="chr1" ) 
+Chr2=df_tf2 %>% subset(V1=="chr2") 
+Chr2
+#column names should be equal
+rbind(Chr1,Chr2)
+#number of columns should be equal
+cbind(Chr1,Chr2)
+```
+
+### Add length of binding site of TF as a column
+```{r}
+length=data.frame((Chr1$V3)-(Chr1$V2))
+length
+newdf=cbind(Chr1$V1,length)
+newdf
+len=length$index=c(1:dim(length)[1])
+len
+```
+
+### To merge two files with same unique id column
+```{r}
+#like joins in db
+#x.all= T -> all rows of X will be merges(outer join)
+merge(x=Chr1, y= length, by.x = Chr1$,by.y=length$ ,)
+```
+
+### mutate
+
